@@ -1,1 +1,7 @@
-(){}.+-
+while ( n < 2 ) {
+  a = a + 1;
+  fred = "this is a string";
+}
+
+
+

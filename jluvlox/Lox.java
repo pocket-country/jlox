@@ -41,7 +41,7 @@ public class Lox {
       run(line);
       hadError = false;
     }
-    System.out.println("Bye Bye Baby!")
+    System.out.println("Bye Bye Baby!");
   }
   // and the actual run method itself
   private static void run(String source) {
