@@ -67,16 +67,20 @@ class Scanner {
       case '+': addToken(PLUS); break;
       case ';': addToken(SEMICOLON); break;
       case '*': addToken(STAR); break;
+      // changed comment marker to ~>, so now handling "/" is simple:
+      case '/': addToken(SLASH); break;
       case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
       case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
       case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
       case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
-      case '/':          // handle comments, look for 2nd '/' and go to EOLN
-        if (match('/')) {
+      case '~': // comment is ~>, look for > and go to EOLN
+        if (match('>')) {
           // just slurp it up and ignore ... could do something more intresting?
           while (peek() != '\n' && !isAtEnd()) advance();
+          String comment = source.substring(start + 2, current);
+          Lox.recordComment( line, comment);
         } else {
-          addToken(SLASH);
+          Lox.error(line, "Unexpected Character");
         }
         break;
       case ' ':
