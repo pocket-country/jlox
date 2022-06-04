@@ -1,6 +1,9 @@
 while ( n < 2 ) {
+  ~> this is my very first comment, note homegrown ~> as comment indicator
   a = a + 1;
   fred = "this is a string";
+ -1.123
+  ~> I'm so proud of my first ever origional move as a language designer
 }
 
 
