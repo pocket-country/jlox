@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Lox {
 
-  // see notes CI p42 reegarding this global
+  // see notes p42 reegarding this global
   static boolean hadError = false;
   static boolean recordComments = false;
   static PrintWriter commentFile;
@@ -55,15 +55,29 @@ public class Lox {
 
     // for now, just print tokens we have scanned
     for (Token token : tokens) {
-      System.out.println(token);
+      Parser parser = new Parser(tokens);
+      Expr expression = parser.parse();
+      // stop if error
+      if (hadError) return;
+      // only thing to do with this is print it as we don't have an intrepreter yet
+      System.out.println(new AstPrinter().print(expression));
     }
   }
-  // error handling - bare bones
+  // error handling
+  // - bare bones p41
   static void error(int line, String message) {
-    reportErr(line, " ", message);
+    report(line, " ", message);
+  }
+  // - parser (note diffrent signature)
+  static void error(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+      report(token.line, "at end", message);
+    } else {
+      report(token.line, "at '" + token.lexeme + "'", message);
+    }
   }
   // helper for reporting errors
-  private static void reportErr(int line, String where, String message) {
+  private static void report(int line, String where, String message) {
     System.err.println(
       "[line " + line + "] Error" + where + ": " + message
     );
