@@ -10,9 +10,12 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
-
+  private static final Interpreter interpreter = new Interpreter();
   // see notes p42 reegarding this global
   static boolean hadError = false;
+  // p 107
+  static boolean hadRuntimeError = false;
+  // my mod!  Comments go to file!
   static boolean recordComments = false;
   static PrintWriter commentFile;
 
@@ -34,6 +37,7 @@ public class Lox {
     run( new String(bytes, Charset.defaultCharset()));
     // indicate error on exit code
     if (hadError) System.exit(65);
+    if (hadError) System.exit(70);
   }
   private static void runPrompt() throws IOException {
     InputStreamReader input = new InputStreamReader(System.in);
@@ -57,7 +61,8 @@ public class Lox {
     // stop if error
     if (hadError) return;
     // only thing to do with this is print it as we don't have an intrepreter yet
-    System.out.println(new AstPrinter().print(expression));
+    System.out.println(new AstPrint2().print(expression));
+    //interpreter.interpret(expression);
   }
   // error handling
   // - bare bones p41
@@ -71,6 +76,12 @@ public class Lox {
     } else {
       report(token.line, "at '" + token.lexeme + "'", message);
     }
+  }
+  // runtime p107
+  static void runtimeError(RuntimeError error) {
+    System.err.println(error.getMessage() +
+      "\n[line " + error.token.line + "]" );
+    hadRuntimeError = true;
   }
   // helper for reporting errors
   private static void report(int line, String where, String message) {
