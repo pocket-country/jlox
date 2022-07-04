@@ -22,12 +22,18 @@ class AstPrint2 implements Expr.Visitor<Void> {
     nodeLevel = 0;
   }
   String print(Expr expr) {
-    // ToDo: why am i getting a blank line and a level 0?  Is there
-    // a null node at the top of the tree?
     expr.accept(this);
     return exprSB.toString();
   }
 
+  @Override
+  public Void visitAssignExpr(Expr.Assign expr) {
+    nodeLevel++;
+    makeline("Assign -> " + expr.name.type.name());
+    expr.value.accept(this);
+    nodeLevel--;
+    return null;
+  }
   @Override
   public Void visitBinaryExpr(Expr.Binary expr) {
     nodeLevel++;
@@ -59,6 +65,14 @@ class AstPrint2 implements Expr.Visitor<Void> {
     return null;
   }
 
+  @Override
+  public Void visitVariableExpr(Expr.Variable expr) {
+    nodeLevel++;
+    makeline(expr.name.type.name());
+    nodeLevel--;
+    return null;
+
+  }
   @Override
   public Void visitUnaryExpr(Expr.Unary expr) {
     nodeLevel++;

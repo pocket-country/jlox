@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Lox {
   private static final Interpreter interpreter = new Interpreter();
-  // see notes p42 reegarding this global
+  // see notes p42 regarding this global
   static boolean hadError = false;
   // p 107
   static boolean hadRuntimeError = false;
@@ -21,7 +21,7 @@ public class Lox {
 
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
-      System.out.println("Usage: jlox [script]");
+      System.out.println("Usage: Lox [script]");
       System.exit(64);
     } else if (args.length == 1) {
       enableComment();
@@ -57,19 +57,20 @@ public class Lox {
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.scanTokens();
     Parser parser = new Parser(tokens);
-    Expr expression = parser.parse();
+    List<Stmt> statements = parser.parse();
     // stop if error
     if (hadError) return;
-    // only thing to do with this is print it as we don't have an intrepreter yet
-    System.out.println(new AstPrint2().print(expression));
+    // only thing to do with this is print it as we don't have an interpreter yet
+    //System.out.println(new AstPrint2().print(expression));
     //interpreter.interpret(expression);
+    interpreter.interpret(statements);
   }
   // error handling
   // - bare bones p41
   static void error(int line, String message) {
     report(line, " ", message);
   }
-  // - parser (note diffrent signature)
+  // - parser (note different signature)
   static void error(Token token, String message) {
     if (token.type == TokenType.EOF) {
       report(token.line, "at end", message);

@@ -1,5 +1,6 @@
 package jluvlox;
 
+import java.util.ArrayList;
 import java.util.List;
 import static jluvlox.TokenType.*;
 
@@ -7,25 +8,93 @@ class Parser {
   private final List<Token> tokens;
   private int current = 0;
 
-  private static class ParseError extends RuntimeException{};
+  private static class ParseError extends RuntimeException{}
 
   Parser(List<Token> tokens) {
     this.tokens = tokens;
   }
 
-  Expr parse() {
+  List<Stmt> parse() {
     try {
-      return expression();
+      List<Stmt> statements = new ArrayList<>();
+
+      while (!isAtEnd()) {
+        statements.add(declaration());
+      }
+      return statements;
+
     } catch (ParseError error ) {
       return null;
     }
 
   }
-  private Expr expression() {
-    return equality();
+  // production rules for statements
+  private Stmt declaration() {
+    try {
+      if (match(VAR)) return varDeclaration();
+      return statement();
+    } catch (ParseError error) {
+      synchronize();
+      return null;
+    }
   }
-  // production rules
-  // see challenge p 87 to capture pattern in next four methods producing bianry
+  private Stmt statement() {
+    if (match(PRINT)) return printStatement();
+    if (match(TOKE)) return tokeStatement();
+
+    return expressionStatement();
+  }
+  private Stmt printStatement() {
+    Expr value = expression();
+    consume(SEMICOLON, "Expect ';' after expression. ");
+    return new Stmt.Print(value);
+  }
+  private Stmt tokeStatement() {
+    // this one is mine ... a try at introspection ... run the list of tokens
+    // out to stdout
+    consume(SEMICOLON, "Expect ';' after expression.");
+    // just grab the token list from the parser class internals
+    return new Stmt.Toke(tokens);
+  }
+  private Stmt varDeclaration() {
+    Token name = consume(IDENTIFIER, "Expect variable name.");
+
+    Expr initializer = null;
+    if (match(EQUAL)) {
+      initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expect ';' after variable declaration.");
+    return new Stmt.Var(name, initializer);
+  }
+  private Stmt expressionStatement() {
+    Expr expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression. ");
+    return new Stmt.Expression(expr);
+  }
+
+  // production rules for expressions
+  private Expr assignment() {
+    Expr expr = equality();
+
+    if (match(EQUAL)) {
+      Token equals = previous();
+      Expr value = assignment();
+
+      if (expr instanceof Expr.Variable) {
+        Token name = ((Expr.Variable)expr).name;
+        return new Expr.Assign(name, value);
+      }
+
+        error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
+  private Expr expression() {
+    return assignment();
+  }
+  // see challenge p 87 to capture pattern in next four methods producing binary
   private Expr equality() {
     Expr expr = comparison();
     while (match(BANG_EQUAL, EQUAL_EQUAL)) {
@@ -82,6 +151,7 @@ class Parser {
     if (match(FALSE)) return new Expr.Literal(false);
     if (match(TRUE)) return new Expr.Literal(true);
     if (match(NIL)) return new Expr.Literal(null);
+    if (match(IDENTIFIER)) return new Expr.Variable(previous());
 
     if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
 

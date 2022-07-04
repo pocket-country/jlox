@@ -15,11 +15,21 @@ public class GenerateAst {
     // call defineAst
     // note building list as third parameter in the function call
     defineAst(outputDir, "Expr", Arrays.asList(
+      "Assign   : Token name, Expr value",
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression",
       "Literal  : Object value",
+      "Variable : Token name",
       "Unary    : Token operator, Expr right"
     ));
+    // now for our statements
+    defineAst(outputDir,"Stmt", Arrays.asList (
+      "Expression : Expr expression",
+      "Print      : Expr expression",
+      "Var        : Token name, Expr initializer",
+      "Toke       : List<Token> tokens"
+    ));
+
   }  // end of main
 
   private static void defineAst(
