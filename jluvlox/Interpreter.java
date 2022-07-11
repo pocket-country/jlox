@@ -9,8 +9,22 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   // statement visitor method overrides
   @Override
+  public Void visitBlockStmt(Stmt.Block stmt) {
+    executeBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+  @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
     evaluate(stmt.expression);
+    return null;
+  }
+  @Override
+  public Void visitIfStmt(Stmt.IF stmt) {
+    if (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      execute(stmt.elseBranch);
+    }
     return null;
   }
   @Override
@@ -23,6 +37,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Void visitTokeStmt(Stmt.Toke stmt) {
     for (Token token : stmt.tokens) {
       System.out.println(stringify(token));
+      // we do have the expression, so could
+      // print the parse tree ... or feed it into
+      // evaluate?
     }
     return null;
   }
@@ -34,6 +51,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+  @Override
+  public Void visitWhileStmt(Stmt.While stmt) {
+    while (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.body);
+    }
     return null;
   }
 
@@ -52,6 +76,18 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
+  }
+  @override
+  public Object visitLogicalExpr(Expr.logical expr) {
+    Object left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
   }
   @Override
   public Object visitUnaryExpr(Expr.Unary expr) {
@@ -133,6 +169,20 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   // actually execute a statement
   private void execute(Stmt stmt) {
     stmt.accept(this);
+  }
+  // execute a full block (why not private like others?)
+  void executeBlock(List<Stmt> statements,
+                            Environment environment) {
+    Environment previous = this.environment;
+    try {
+      this.environment = environment;
+
+      for (Stmt statement: statements ) {
+        execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
   private boolean isTruthy(Object object) {
     if (object == null) return false;

@@ -1,0 +1,7 @@
+#!/bin/bash
+# compile builder 'tool' and then regenerate Stmt.java and Expr.java
+# note hardcoding destination directory
+# note runs old class even after compile error probably should fix this
+javac tools/GenerateAst.java
+java tools/GenerateAst jluvlox
+ 

@@ -31,6 +31,7 @@ class Scanner {
     keywords.put("super", SUPER);
     keywords.put("this",  THIS);
     keywords.put("true",  TRUE);
+    keywords.put("toke", TOKE);
     keywords.put("var",   VAR);
     keywords.put("while", WHILE);
   }
