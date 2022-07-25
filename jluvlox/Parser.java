@@ -40,8 +40,8 @@ class Parser {
     }
   }
   private Stmt statement() {
-    if match(FOR) return forStatement();
-    if (match(IF)) return ifStatement;
+    if (match(FOR)) return forStatement();
+    if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
     if (match(WHILE)) return whileStatement();
     if (match(TOKE)) return tokeStatement();
@@ -55,7 +55,7 @@ class Parser {
     Stmt initializer;
     if (match(SEMICOLON)) {
       initializer = null;
-    } else if match((VAR)) {
+    } else if (match(VAR)) {
       initializer = varDeclaration();
     } else {
       initializer = expressionStatement();
@@ -118,7 +118,7 @@ class Parser {
     // out to stdout
     consume(SEMICOLON, "Expect ';' after expression.");
     // just grab the token list from the parser class internals
-    return new Stmt.Toke(Parser.tokens);
+    return new Stmt.Toke(tokens);
   }
   private Stmt varDeclaration() {
     Token name = consume(IDENTIFIER, "Expect variable name.");
@@ -147,6 +147,8 @@ class Parser {
     return new Stmt.Expression(expr);
   }
   private List<Stmt> block() {
+    List<Stmt> statements = new ArrayList<>();
+
     while (!check(RIGHT_BRACE) && !isAtEnd()) {
       statements.add(declaration());
     }
@@ -248,7 +250,37 @@ class Parser {
       return new Expr.Unary(operator, right);
     }
 
-    return primary();
+    return call();
+  }
+  private Expr call() {
+    //expression yields the callee
+    Expr expr = primary();
+    // and roll any chained calls [such as f()()]
+    while (true) {
+      if (match(LEFT_PAREN)) {
+        expr = finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+  private Expr finishCall(Expr callee) {
+    List<Expr> arguments = new ArrayList<>();
+
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (arguments.size() >= 255) {
+          error(peek(), "Can't have more than 255 arguments.")
+        }
+        arguments.add(expression());
+      } while (match(COMMA));
+    }
+
+    Token paren = consume(RIGHT_PAREN, "expect ')' after arguments.");
+
+    return new Expr.Call(callee, paren, arguments);
   }
   private Expr primary() {
     if (match(FALSE)) return new Expr.Literal(false);

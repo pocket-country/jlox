@@ -45,6 +45,16 @@ class AstPrint2 implements Expr.Visitor<Void> {
   }
 
   @Override
+  public Void visitLogicalExpr(Expr.Logical expr) {
+    nodeLevel++;
+    makeline(expr.operator.type.name());
+    expr.left.accept(this);
+    expr.right.accept(this);
+    nodeLevel--;
+    return null;
+  }
+
+  @Override
   public Void visitGroupingExpr(Expr.Grouping expr) {
     nodeLevel++;
     makeline("group");

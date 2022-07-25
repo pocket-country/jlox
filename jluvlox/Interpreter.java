@@ -1,12 +1,41 @@
 package jluvlox;
 
 import java.util.List;
+import java.util.ArrayList;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-
   // here is our global environment
-  private Environment environment = new Environment();
+  final Environment globals = new Environment();
+  private Environment environment = globals;
+  // constructor for interpreter contains defs of built-in, or native functions
+  Interpreter() {
+    globals.define("clock",new LoxCallable() {
+      @Override
+      public int arity() { return 0; }
 
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+  }
+
+  // the actual interpreter method!  Very Exciting!
+  void interpret(List<Stmt> statements) {
+    try {
+      // old evaluate expr:
+      // Object value = evaluate(expression);
+      // System.out.println(stringify(value));
+      for (Stmt statement : statements ) {
+        execute(statement);
+      }
+    } catch (RuntimeError error) {
+      Lox.runtimeError(error);
+    }
+  }
   // statement visitor method overrides
   @Override
   public Void visitBlockStmt(Stmt.Block stmt) {
@@ -19,7 +48,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
   @Override
-  public Void visitIfStmt(Stmt.IF stmt) {
+  public Void visitIfStmt(Stmt.If stmt) {
     if (isTruthy(evaluate(stmt.condition))) {
       execute(stmt.thenBranch);
     } else if (stmt.elseBranch != null) {
@@ -70,6 +99,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
   @Override
   public Object visitVariableExpr( Expr.Variable expr) {
+
     return environment.get(expr.name);
   }
 
@@ -77,8 +107,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
   }
-  @override
-  public Object visitLogicalExpr(Expr.logical expr) {
+
+  @Override
+  public Object visitLogicalExpr(Expr.Logical expr) {
     Object left = evaluate(expr.left);
 
     if (expr.operator.type == TokenType.OR) {
@@ -89,6 +120,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     return evaluate(expr.right);
   }
+
   @Override
   public Object visitUnaryExpr(Expr.Unary expr) {
     Object right = evaluate(expr.right);
@@ -102,10 +134,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // unreachable
     return null;
   }
+
   @Override
   public Object visitGroupingExpr(Expr.Grouping expr) {
     return evaluate(expr.expression);
   }
+
   @Override
   public Object visitBinaryExpr(Expr.Binary expr) {
     Object left = evaluate(expr.left);
@@ -149,21 +183,30 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  @Override
+  public Object visitCallExpr(Expr.Call expr) {
+    Object callee = evaluate(expr.callee);
+
+    List<Object> arguments = new ArrayList<>();
+    for (Expr argument : expr.arguments) {
+      arguments.add(evaluate(argument));
+    }
+
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, "Can only call  functions and classes.");
+    }
+
+    LoxCallable function = (LoxCallable)callee;
+
+    if (arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected" +
+              function.arity() + "arguments but got " +
+              arguments.size() + ".");
+    }
+    return function.call(this, arguments);
+  }
   // end of visitor override methods
 
-  // the actual interpreter method!  Very Exciting!
-  void interpret(List<Stmt> statements) {
-    try {
-      // old evaluate expr:
-      // Object value = evaluate(expression);
-      // System.out.println(stringify(value));
-      for (Stmt statement : statements ) {
-        execute(statement);
-      }
-    } catch (RuntimeError error) {
-      Lox.runtimeError(error);
-    }
-  }
 
   // helpers
   // actually execute a statement

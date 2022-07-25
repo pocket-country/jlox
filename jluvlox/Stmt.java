@@ -93,9 +93,8 @@ abstract class Stmt {
     final Expr initializer;
   }
   static class Toke extends Stmt {
-    Toke(List<Token> tokens, Expr tree) {
+    Toke(List<Token> tokens) {
       this.tokens = tokens;
-      this.tree = tree;
     }
 
     @Override
@@ -104,7 +103,6 @@ abstract class Stmt {
     }
 
     final List<Token> tokens;
-    final Expr tree;
   }
 
   abstract <R> R accept(Visitor<R> visitor);
