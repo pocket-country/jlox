@@ -7,6 +7,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   // here is our global environment
   final Environment globals = new Environment();
   private Environment environment = globals;
+
   // constructor for interpreter contains defs of built-in, or native functions
   Interpreter() {
     globals.define("clock",new LoxCallable() {
@@ -47,6 +48,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     evaluate(stmt.expression);
     return null;
   }
+  @override
+  public Void visitFunctionStmt(Stmt.Function stmt) {
+    LoxFunction function = new LoxFunction(stmt, environment);
+    environment.define(stmt.name.lexeme, function);
+    return null;
+  }
   @Override
   public Void visitIfStmt(Stmt.If stmt) {
     if (isTruthy(evaluate(stmt.condition))) {
@@ -61,6 +68,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     Object value = evaluate(stmt.expression);
     System.out.println(stringify(value));
     return null;
+  }
+  @Override
+  public void visitReturnStmt(Stmt.Return stmt) {
+    Object value = null;
+    if (stmt.value != null) value = evaluate(stmt.value);
+
+    throw new Return(value);
   }
   @Override
   public Void visitTokeStmt(Stmt.Toke stmt) {
