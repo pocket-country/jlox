@@ -26,11 +26,11 @@ class LoxFunction implements LoxCallable {
         }
         return null;
     }
-    @override
+    @Override
     public int arity() {
-        return declaration.params.size;
+        return declaration.params.size();
     }
-    @override
+    @Override
     public String toString() {
         return "<fn " + declaration.name.lexeme + ">";
     }

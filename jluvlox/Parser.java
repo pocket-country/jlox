@@ -44,7 +44,7 @@ class Parser {
     if (match(FOR)) return forStatement();
     if (match(IF)) return ifStatement();
     if (match(PRINT)) return printStatement();
-    if (match(RETURN)) return returnStatement():
+    if (match(RETURN)) return returnStatement();
     if (match(WHILE)) return whileStatement();
     if (match(TOKE)) return tokeStatement();
     if (match(LEFT_BRACE)) return new Stmt.Block(block());
@@ -118,7 +118,7 @@ class Parser {
   private Stmt returnStatement() {
     Token keyword = previous();
     Expr value = null;
-    if (!check(SEMICOLON)), "Expect ';' after return value.") {
+    if (!check(SEMICOLON)) {
       value = expression();
     }
     consume(SEMICOLON, "Expect ';' after return value");
@@ -302,7 +302,7 @@ class Parser {
     if (!check(RIGHT_PAREN)) {
       do {
         if (arguments.size() >= 255) {
-          error(peek(), "Can't have more than 255 arguments.")
+          error(peek(), "Can't have more than 255 arguments.");
         }
         arguments.add(expression());
       } while (match(COMMA));
