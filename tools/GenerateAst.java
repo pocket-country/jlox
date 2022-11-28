@@ -20,20 +20,20 @@ public class GenerateAst {
       "Call     : Expr callee, Token paren, List<Expr> arguments",
       "Grouping : Expr expression",
       "Literal  : Object value",
-      "Variable : Token name",
       "Logical  : Expr left, Token operator, Expr right",
+      "Variable : Token name",
       "Unary    : Token operator, Expr right"
     ));
     // now for our statements
     defineAst(outputDir,"Stmt", Arrays.asList (
       "Block      : List<Stmt> statements",
       "Expression : Expr expression",
+      "Function   : Token name, List<Token> params, List<Stmt> body",
+      "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
       "Print      : Expr expression",
       "Return     : Token keyword, Expr value",
-      "Function   : Token name, List<Token> params, List<Stmt> body",
-      "While      : Expr condition, Stmt body",
-      "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
       "Var        : Token name, Expr initializer",
+      "While      : Expr condition, Stmt body",
       "Toke       : List<Token> tokens"
     ));
 
@@ -102,7 +102,7 @@ public class GenerateAst {
     writer.println("    <R> R accept(Visitor<R> visitor) {");
     writer.println("      return visitor.visit" + className + baseName + "(this);");
     writer.println("    }");
-    
+
     // Fields.
     writer.println();
     for (String field : fields) {

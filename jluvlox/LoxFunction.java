@@ -8,14 +8,14 @@ class LoxFunction implements LoxCallable {
     private final Environment closure;
 
     LoxFunction(Stmt.Function declaration, Environment closure) {
-        this.declaration = declaration;
         this.closure = closure;
+        this.declaration = declaration;
     }
 
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
         Environment environment = new Environment(closure);
-        for (int i = 1; i < declaration.params.size(); i++) {
+        for (int i = 0; i < declaration.params.size(); i++) {
             environment.define(declaration.params.get(i).lexeme, arguments.get(i));
         }
 

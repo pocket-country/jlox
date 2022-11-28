@@ -87,8 +87,9 @@ public class Lox {
   // helper for reporting errors
   private static void report(int line, String where, String message) {
     System.err.println(
-      "[line " + line + "] Error" + where + ": " + message
+      "[line " + line + "] Error " + where + ": " + message
     );
+    hadError = true;
   }
   // and for stashing away comments in a file ... my little wrinkle
   private static void enableComment() throws IOException {

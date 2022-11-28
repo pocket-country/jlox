@@ -27,7 +27,7 @@ public class Environment {
         if (enclosing != null) return enclosing.get(name);
         //wind up here if nothing found
         throw new RuntimeError( name,
-                "Undefined variable '" + name.lexeme + "'.");
+                "Attempt to retrieve undefined variable  '" + name.lexeme + "'.");
     }
 
     void assign(Token name, Object value) {
@@ -42,6 +42,6 @@ public class Environment {
         }
 
         throw new RuntimeError(name,
-                "Undefined variable '" + name.lexeme + "'.");
+                "Attempt to assign undefined variable '" + name.lexeme + "'.");
     }
 }

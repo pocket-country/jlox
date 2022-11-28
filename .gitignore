@@ -1,3 +1,6 @@
+comments.txt
+*.lox
 *.class
 */*.class
-
+cold_storage/
+cold_storage/*
